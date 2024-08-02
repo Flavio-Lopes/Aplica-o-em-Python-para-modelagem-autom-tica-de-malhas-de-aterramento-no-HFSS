@@ -53,7 +53,7 @@ caminho_arquivo_altern = caminho_arquivo.replace("\\", "/")
 caminho_projeto_base = caminho_projeto_base.replace("\\", "/")
 caminho_projeto_novo = caminho_projeto_novo.replace("\\", "/")
 
-
+#Essa parte dos 3 modelos será aprimorada na aplicação, e explicada no 3.2.6, no qual será automatizado a criaçãão de malhas de aterramento de diferentes tamanhos
 def modelo_1():
     # Solicitar ao usuário que insira o comprimento da haste 2-6m 
     comprimento_haste = float(input("\nInsira o comprimento da malha quadrada: \n").strip())
