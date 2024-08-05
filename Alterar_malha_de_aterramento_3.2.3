@@ -1,0 +1,152 @@
+import subprocess
+import time
+import os
+
+# Solicitar ao usuário que insira o caminho para o arquivo Python
+caminho_arquivo = input("\nInsira o caminho para o arquivo Python (ex: C:\\caminho\\para\\seu\\arquivo.py): \n").strip()
+
+# Solicitar ao usuário que insira o caminho para o projeto do HFSS
+caminho_projeto = input("\nInsira o caminho para o projeto do HFSS (ex: C:\\caminho\\para\\seu\\projeto.aedt): \n").strip()
+
+# Verificar se o projeto do HFSS existe
+if not os.path.isfile(caminho_projeto):
+    print(f"O projeto {caminho_projeto} não foi encontrado. Por favor, verifique o caminho e tente novamente.")
+    exit()
+# Obter apenas o nome do arquivo do projeto (sem a extensão .aedt)
+
+nome_projeto = os.path.splitext(os.path.basename(caminho_projeto))[0] 
+
+# Solicitar ao usuário que insira o nome do designs do projeto do HFSS
+#nome_design = input("\nInsira o nome do design do projeto: \n").strip()
+
+# Converter barras inclinadas para barras invertidas nos caminhos
+caminho_arquivo = caminho_arquivo.replace("\\", "/")
+caminho_projeto = caminho_projeto.replace("\\", "/")
+
+# Solicitar ao usuário que insira o comprimento da haste
+comprimento_haste = float(input("\nInsira o comprimento da malha quadrada: \n").strip())
+
+# Solicitar ao usuário a resistividade do solo 
+resistividade = float(input("\nInsira a resistividade do solo: \n").strip())
+
+# Conteúdo do código HFSS a ser escrito no arquivo
+codigo_hfss = f"""
+import ScriptEnv
+ScriptEnv.Initialize("Ansoft.ElectronicsDesktop")
+oDesktop.RestoreWindow()
+oDesktop.OpenProject("C:/Users/flavi/OneDrive - Universidade Federal de Pernambuco/TCC/Testes para o TCC/Malhas/Malha nitaria com alteracoes/teste_malha_unit.aedt")
+oProject = oDesktop.SetActiveProject("teste_malha_unit")
+oProject.ChangeProperty(
+    [
+        "NAME:AllTabs",
+        [
+            "NAME:ProjectVariableTab",
+            [
+                "NAME:PropServers", 
+                "ProjectVariables"
+            ],
+            [
+                "NAME:ChangedProps",
+                [
+                    "NAME:$L",
+                    "Value:="       , "{comprimento_haste/2}"  # Comprimento da haste sendo escrito no arquivo
+                ]
+            ]
+        ]
+    ])
+oDesign = oProject.SetActiveDesign("Malha_unitaria")
+oEditor = oDesign.SetActiveEditor("3D Modeler")
+oEditor.AssignMaterial(
+    [
+        "NAME:Selections",
+        "AllowRegionDependentPartSelectionForPMLCreation:=", True,
+        "AllowRegionSelectionForPMLCreation:=", True,
+        "Selections:="      , "Sphere1"
+    ], 
+    [
+        "NAME:Attributes",
+        "MaterialValue:="   , "\\"SoloTeste1\\"",
+        "SolveInside:="     , True,
+        "ShellElement:="    , False,
+        "ShellElementThickness:=", "nan ",
+        "ReferenceTemperature:=", "nan ",
+        "IsMaterialEditable:="  , True,
+        "UseMaterialAppearance:=", False,
+        "IsLightweight:="   , False
+    ])
+oEditor.AssignMaterial(
+    [
+        "NAME:Selections",
+        "AllowRegionDependentPartSelectionForPMLCreation:=", True,
+        "AllowRegionSelectionForPMLCreation:=", True,
+        "Selections:="      , "Sphere1"
+    ], 
+    [
+        "NAME:Attributes",
+        "MaterialValue:="   , "\\"SoloTeste1\\"",
+        "SolveInside:="     , True,
+        "ShellElement:="    , False,
+        "ShellElementThickness:=", "nan ",
+        "ReferenceTemperature:=", "nan ",
+        "IsMaterialEditable:="  , True,
+        "UseMaterialAppearance:=", False,
+        "IsLightweight:="   , False
+    ])
+oDefinitionManager = oProject.GetDefinitionManager()
+oDefinitionManager.EditMaterial("SoloTeste1", 
+    [
+        "NAME:SoloTeste1",
+        "CoordinateSystemType:=", "Cartesian",
+        "BulkOrSurfaceType:="   , 1,
+        [
+            "NAME:PhysicsTypes",
+            "set:="         , ["Electromagnetic","Thermal","Structural"]
+        ],
+        [
+            "NAME:AttachedData",
+            [
+                "NAME:MatAppearanceData",
+                "property_data:="   , "appearance_data",
+                "Red:="         , 89,
+                "Green:="       , 94,
+                "Blue:="        , 107
+            ]
+        ],
+        "permittivity:="    , "11.9",
+        "conductivity:="    , "{1/resistividade}", # resistividade sendo escrito no arquivo
+
+        "thermal_conductivity:=", "148",
+        "mass_density:="    , "2330",
+        "specific_heat:="   , "712",
+        "youngs_modulus:="  , "135000000000",
+        "poissons_ratio:="  , "0.25",
+        "thermal_expansion_coefficient:=", "2.54e-06"
+    ])
+oProject.Save()
+"""
+
+# Escreve o código HFSS no arquivo Python
+with open(caminho_arquivo, "w") as arquivo:
+    arquivo.write(codigo_hfss)
+#  Validar endereço do ansysedt
+def obter_caminho_valido(mensagem):
+    while True:
+        caminho = input(mensagem).strip()
+        if caminho.lower() == 'sair':
+            exit()
+        elif os.path.isfile(caminho):
+            return caminho
+        else:
+            print(f"\nO caminho {caminho} não foi encontrado. Tente novamente ou digite 'sair' para sair.")
+
+# Solicita o caminho completo para o ansysedt.exe e o valida
+caminho_ansysedt = obter_caminho_valido("\nInsira o caminho para o ansysedtf (ex: C:\\caminho\\para\\seu\\ansysedtsv.aedt):\n")
+
+# Comando para executar o arquivo Python no HFSS
+comando = f'"{caminho_ansysedt}" -runscript "{caminho_arquivo}"'
+
+# Executa o comando
+subprocess.Popen(comando, shell=True)
+# Aguarde alguns segundos antes de fechar o HFSS
+tempo_de_espera = 30  # ajuste conforme necessário
+time.sleep(tempo_de_espera)
