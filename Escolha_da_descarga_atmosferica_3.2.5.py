@@ -51,7 +51,7 @@ caminho_projeto_base = caminho_projeto_base.replace("\\", "/")
 caminho_projeto_novo = caminho_projeto_novo.replace("\\", "/")
 
 
-
+#Todos os modelos para escolha do usuário já foram definidos no tópico 3.2.4
 def modelo_1():
   ....
 def modelo_2():
@@ -60,6 +60,7 @@ def modelo_2():
 def modelo_3():
   .....
 
+# Função que cria a forma de onda da descarga atmosférica, dado os dados informados pelo usuário
 def lightning(tpp, tmm, tend, peak, resol, diretorio):
     # Pontos de tempo (em ms)
     t = np.linspace(0, tend, resol)
@@ -154,13 +155,15 @@ def lightning(tpp, tmm, tend, peak, resol, diretorio):
     plt.grid(True)
     plt.show()
     
-    # Formatando o nome do arquivo
+    # Criando e Formatando o nome do arquivo
     tpp_int = int(tpp)  # Salvando apenas a parte inteira de tpp
     file_name = f'k{int(peak)}_{tpp_int}_{int(tmm)}u.tab'
     file_path = os.path.join(diretorio, file_name)
     np.savetxt(file_path, np.column_stack((t * 1e-6, I)), delimiter='\t', header='Time (µs)\tCurrent (kA)', comments='')
 
     return K, alpha, beta, emax, kk, file_path, file_name
+
+# Função que define no HFSS uma entrada de descarga 8/25us já presente no diretório do arquivo base
 def define_input1():
     diretorio_raio=os.path.dirname(caminho_projeto_novo)
     nome_projeto_novo = os.path.splitext(os.path.basename(caminho_projeto_novo))[0] 
@@ -262,6 +265,7 @@ oProject.Save()
     plt.grid(True)
     plt.show() 
 
+# Função que define no HFSS uma entrada de descarga 1.2/50us já presente no diretório do arquivo base
 def define_input2():
     diretorio_raio=os.path.dirname(caminho_projeto_novo)
     nome_projeto_novo = os.path.splitext(os.path.basename(caminho_projeto_novo))[0] 
@@ -363,6 +367,7 @@ oProject.Save()
     plt.grid(True)
     plt.show() 
 
+# Função que define no HFSS uma entrada de descarga personalizada baseado na escolha do usuário.
 def define_input3():
     diretorio_raio = os.path.dirname(caminho_projeto_novo)
     while True:
@@ -473,8 +478,9 @@ def escolhe_modelo():
                 time.sleep(5)  # Aguarda 5 segundos antes de verificar novamente   
             
             if opcao == '1':  
+                   # O usuário irá escolher qual forma de onda da descarga para ser entrada da aplicação
                 while True:   
-                    print("\nPara o input da aplicação, digite 1 para uma descarga atmosférica 8/20us, digite 2 para uma descarga 1.2/50us ou digite 3 para gerar seu próprio modelo.")
+                    print("\nPara o input da aplicação, digite 1 para uma descarga atmosférica 8/20us, \ndigite 2 para uma descarga 1.2/50us ou \n digite 3 para gerar seu próprio modelo.")
                     modelo_input = input().strip()
                     if modelo_input == '1':
                         define_input1()
